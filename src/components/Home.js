@@ -4,6 +4,153 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 function Home() {
+const [roomId, setRoomId] = useState("");
+const [username, setUsername] = useState("");
+
+  const navigate = useNavigate();
+
+  const generateRoomId = (e) => {
+    e.preventDefault();
+    const Id = uuid();
+    setRoomId(Id);
+    toast.success("Room Id is generated");
+  };
+
+  const joinRoom = () => {
+    if (!roomId || !username) {
+      toast.error("Both fields are required");
+      return;
+    }
+
+    // redirect
+    navigate(`/editor/${roomId}`, {
+      state: {
+        username,
+      },
+    });
+    toast.success("Room is created");
+  };
+
+  const handleInputEnter = (e) => {
+    if (e.code === "Enter") {
+      joinRoom();
+    }
+  };
+
+  return (
+    <div
+      className="container-fluid"
+      style={{
+        backgroundColor: "#1E1E2F",
+        color: "#FFFFFF",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div
+        className="card"
+        style={{
+          backgroundColor: "#2B2D42",
+          borderRadius: "12px",
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+          maxWidth: "400px",
+          width: "100%",
+          padding: "20px",
+        }}
+      >
+        <div className="text-center">
+          <img
+            src="/images/codecast.png"
+            alt="Logo"
+            style={{
+              maxWidth: "120px",
+              marginBottom: "20px",
+            }}
+          />
+          <h4 style={{ color: "#F8F8F8", marginBottom: "20px" }}>
+            Enter the Room ID
+          </h4>
+        </div>
+
+        <div className="form-group">
+          <input
+            type="text"
+            value={roomId}
+            onChange={(e) => setRoomId(e.target.value)}
+            className="form-control mb-3"
+            placeholder="ROOM ID"
+            onKeyUp={handleInputEnter}
+            style={{
+              backgroundColor: "#1E1E2F",
+              color: "#FFFFFF",
+              border: "1px solid #4A4E69",
+              borderRadius: "8px",
+              padding: "10px",
+            }}
+          />
+        </div>
+        <div className="form-group">
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="form-control mb-3"
+            placeholder="USERNAME"
+            onKeyUp={handleInputEnter}
+            style={{
+              backgroundColor: "#1E1E2F",
+              color: "#FFFFFF",
+              border: "1px solid #4A4E69",
+              borderRadius: "8px",
+              padding: "10px",
+            }}
+          />
+        </div>
+        <button
+          onClick={joinRoom}
+          className="btn btn-lg btn-block"
+          style={{
+            backgroundColor: "#4A90E2",
+            color: "#FFFFFF",
+            border: "none",
+            borderRadius: "8px",
+            padding: "10px",
+            fontSize: "16px",
+            marginBottom: "20px",
+          }}
+        >
+          JOIN
+        </button>
+        <p className="text-center">
+          Don't have a room ID?{" "}
+          <span
+            onClick={generateRoomId}
+            style={{
+              color: "#F4A261",
+              cursor: "pointer",
+              textDecoration: "underline",
+            }}
+          >
+            Create New Room
+          </span>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default Home;
+
+
+
+/* import React, { useState } from "react";
+import { v4 as uuid } from "uuid";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+
+function Home() {
   const [roomId, setRoomId] = useState("");
   const [username, setUsername] = useState("");
 
@@ -98,3 +245,4 @@ function Home() {
 }
 
 export default Home;
+ */

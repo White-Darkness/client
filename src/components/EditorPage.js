@@ -14,22 +14,13 @@ import axios from "axios";
 
 // List of supported languages
 const LANGUAGES = [
+  "HTML",
+  "CSS",
+  "JavaScript",
   "python3",
-  "java",
-  "cpp",
-  "nodejs",
-  "c",
-  "ruby",
-  "go",
-  "scala",
-  "bash",
-  "sql",
-  "pascal",
-  "csharp",
-  "php",
-  "swift",
-  "rust",
-  "r",
+  "C",
+  "C++",
+  "C#",
 ];
 
 function EditorPage() {

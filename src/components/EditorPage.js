@@ -14,10 +14,10 @@ import axios from "axios";
 
 // List of supported languages
 const LANGUAGES = [
+  "python",
   "HTML",
   "CSS",
   "JavaScript",
-  "python3",
   "C",
   "C++",
   "C#",
@@ -28,7 +28,7 @@ function EditorPage() {
   const [output, setOutput] = useState("");
   const [isCompileWindowOpen, setIsCompileWindowOpen] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState("python3");
+  const [selectedLanguage, setSelectedLanguage] = useState("python");
   const codeRef = useRef(null);
 
   const Location = useLocation();

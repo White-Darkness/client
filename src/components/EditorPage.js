@@ -95,7 +95,7 @@ function EditorPage() {
   const runCode = async () => {
     setIsCompiling(true);
     try {
-      const response = await axios.post("https://server-jmwe.onrender.com/compile", {
+      const response = await axios.post("https://server-7dhp.onrender.com/compile", {
         code: codeRef.current,
         language: selectedLanguage,
       });

@@ -1,37 +1,32 @@
 import React, { useEffect, useRef, useState } from "react";
-import Client from "./Client";
 import Editor from "./Editor";
 import { initSocket } from "../Socket";
 import { ACTIONS } from "../Actions";
-import {
-  useNavigate,
-  useLocation,
-  Navigate,
-  useParams,
-} from "react-router-dom";
+import { useNavigate, useLocation, Navigate, useParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 
 // List of supported languages
 const LANGUAGES = [
-  "python",
-  "HTML",
+  "Javascript",
+  "htmlmixed",
+  "Python",
+  "XML",
+  "SQL",
   "CSS",
-  "JavaScript",
   "C",
-  "C++",
-  "C#",
+  "C++ , C#", // C, C++, C#
 ];
 
 function EditorPage() {
   const [clients, setClients] = useState([]);
-  const [output, setOutput] = useState("");
+  const [ output, setOutput] = useState("");
   const [isCompileWindowOpen, setIsCompileWindowOpen] = useState(false);
   const [isCompiling, setIsCompiling] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState("python");
+  const [selectedLanguage, setSelectedLanguage] = useState("javascript");
   const codeRef = useRef(null);
 
-  const Location = useLocation();
+  const location = useLocation();
   const navigate = useNavigate();
   const { roomId } = useParams();
 
@@ -51,28 +46,23 @@ function EditorPage() {
 
       socketRef.current.emit(ACTIONS.JOIN, {
         roomId,
-        username: Location.state?.username,
+        username: location.state?.username,
       });
 
-      socketRef.current.on(
-        ACTIONS.JOINED,
-        ({ clients, username, socketId }) => {
-          if (username !== Location.state?.username) {
-            toast.success(`${username} joined the room.`);
-          }
-          setClients(clients);
-          socketRef.current.emit(ACTIONS.SYNC_CODE, {
-            code: codeRef.current,
-            socketId,
-          });
+      socketRef.current.on(ACTIONS.JOINED, ({ clients, username }) => {
+        if (username !== location.state?.username) {
+          toast.success(`${username} joined the room.`);
         }
-      );
+        setClients(clients);
+        socketRef.current.emit(ACTIONS.SYNC_CODE, {
+          code: codeRef.current,
+          socketId: socketRef.current.id,
+        });
+      });
 
       socketRef.current.on(ACTIONS.DISCONNECTED, ({ socketId, username }) => {
         toast.success(`${username} left the room`);
-        setClients((prev) => {
-          return prev.filter((client) => client.socketId !== socketId);
-        });
+        setClients((prev) => prev.filter((client) => client.socketId !== socketId));
       });
     };
     init();
@@ -84,7 +74,7 @@ function EditorPage() {
     };
   }, []);
 
-  if (!Location.state) {
+  if (!location.state) {
     return <Navigate to="/" />;
   }
 
@@ -105,7 +95,7 @@ function EditorPage() {
   const runCode = async () => {
     setIsCompiling(true);
     try {
-      const response = await axios.post("https://server-7dhp.onrender.com/compile", {
+      const response = await axios.post("https://server-jmwe.onrender.com/compile", {
         code: codeRef.current,
         language: selectedLanguage,
       });
@@ -124,7 +114,13 @@ function EditorPage() {
   };
 
   return (
-    <div className="container-fluid vh-100 d-flex flex-column">
+    <div
+      className="container-fluid vh-100 d-flex flex-column"
+      style={{
+        backgroundColor: "#121212", // Dark background
+        color: "#E0E0E0", // Light text
+      }}
+    >
       <div className="row flex-grow-1">
         {/* Client panel */}
         <div className="col-md-2 bg-dark text-light d-flex flex-column">
@@ -138,39 +134,53 @@ function EditorPage() {
 
           {/* Client list container */}
           <div className="d-flex flex-column flex-grow-1 overflow-auto">
-            <span className="mb-2">Members</span>
-            {clients.map((client) => (
-              <Client key={client.socketId} username={client.username} />
-            ))}
+            <span className="mb-3">Connected Users</span>
+            <div className="d-flex flex-column">
+              {clients.map((client) => (
+                <div key={client.socketId} className="p-2">
+                  {client.username}
+                </div>
+              ))}
+            </div>
           </div>
 
-          <hr />
-          {/* Buttons */}
-          <div className="mt-auto mb-3">
-            <button className="btn btn-success w-100 mb-2" onClick={copyRoomId}>
-              Copy Room ID
-            </button>
-            <button className="btn btn-danger w-100" onClick={leaveRoom}>
-              Leave Room
-            </button>
-          </div>
+          <button className="btn btn-danger mt-2" onClick={leaveRoom}>
+            Leave Room
+          </button>
+          <button className="btn btn-info mt-2" onClick={copyRoomId}>
+            Copy Room ID
+          </button>
         </div>
 
-        {/* Editor panel */}
-        <div className="col-md-10 text-light d-flex flex-column">
-          {/* Language selector */}
-          <div className="bg-dark p-2 d-flex justify-content-end">
+        {/* Editor section */}
+        <div className="col-md-10">
+          <div className="d-flex justify-content-between align-items-center">
+            <h2 className="text-light">Code Editor</h2>
             <select
-              className="form-select w-auto"
+              className="form-select"
               value={selectedLanguage}
               onChange={(e) => setSelectedLanguage(e.target.value)}
             >
               {LANGUAGES.map((lang) => (
                 <option key={lang} value={lang}>
-                  {lang}
+                  {lang.charAt(0).toUpperCase() + lang.slice(1)}
                 </option>
               ))}
             </select>
+            <button 
+              className="btn btn-primary" 
+              onClick={runCode} 
+              style={{ padding: "10px 20px", fontSize: "16px", marginRight: "10px" }}
+            >
+              Run Code
+            </button>
+            <button 
+              className="btn btn-secondary" 
+              onClick={toggleCompileWindow} 
+              style={{ padding: "10px 20px", fontSize: "16px" }}
+            >
+              {isCompileWindowOpen ? "Hide Output" : "Show Output"}
+            </button>
           </div>
 
           <Editor
@@ -179,53 +189,16 @@ function EditorPage() {
             onCodeChange={(code) => {
               codeRef.current = code;
             }}
+            selectedLanguage={selectedLanguage}
           />
-        </div>
-      </div>
 
-      {/* Compiler toggle button */}
-      <button
-        className="btn btn-primary position-fixed bottom-0 end-0 m-3"
-        onClick={toggleCompileWindow}
-        style={{ zIndex: 1050 }}
-      >
-        {isCompileWindowOpen ? "Close Compiler" : "Open Compiler"}
-      </button>
-
-      {/* Compiler section */}
-      <div
-        className={`bg-dark text-light p-3 ${
-          isCompileWindowOpen ? "d-block" : "d-none"
-        }`}
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: isCompileWindowOpen ? "30vh" : "0",
-          transition: "height 0.3s ease-in-out",
-          overflowY: "auto",
-          zIndex: 1040,
-        }}
-      >
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h5 className="m-0">Compiler Output ({selectedLanguage})</h5>
-          <div>
-            <button
-              className="btn btn-success me-2"
-              onClick={runCode}
-              disabled={isCompiling}
-            >
-              {isCompiling ? "Compiling..." : "Run Code"}
-            </button>
-            <button className="btn btn-secondary" onClick={toggleCompileWindow}>
-              Close
-            </button>
-          </div>
+          {isCompileWindowOpen && (
+            <div className="output-window mt-3">
+              <h4 className="text-light">Output</h4>
+              <pre className="bg-dark text-light p-2">{isCompiling ? "Compiling..." : output}</pre>
+            </div>
+          )}
         </div>
-        <pre className="bg-secondary p-3 rounded">
-          {output || "Output will appear here after compilation"}
-        </pre>
       </div>
     </div>
   );
